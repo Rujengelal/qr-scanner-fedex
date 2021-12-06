@@ -6,6 +6,8 @@
       <div style="font-weight: 800" id="qr-reader-results">
         Barcode is shown here
       </div>
+
+      <button onclick="">Scan On/Off</button>
       <!-- <div id="qr-reader-results"></div> -->
     </body>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -23,27 +25,42 @@
           document.addEventListener("DOMContentLoaded", fn);
         }
       }
-      let cameraId;
-      Html5Qrcode.getCameras()
-        .then((devices) => {
-          /**
-           * devices would be an array of objects of type:
-           * { id: "id", label: "label" }
-           */
-          console.log("devices ", devices);
-          if (devices && devices.length) {
-            if (devices.length == 1) cameraId = devices[0].id;
-            if (devices.length == 2) cameraId = devices[1].id;
-            // var resultContainer = document.getElementById("qr-reader-results");
-            // resultContainer.innerText = devices.length;
-            // .. use this to start scanning.
-          }
-        })
-        .catch((err) => {
-          // handle err
-        });
 
-      docReady(function () {
+      docReady(function async() {
+        let cameraId;
+        Html5Qrcode.getCameras()
+          .then((devices) => {
+            /**
+             * devices would be an array of objects of type:
+             * { id: "id", label: "label" }
+             */
+            console.log("devices ", devices);
+            if (devices && devices.length) {
+              if (devices.length == 1) cameraId = devices[0].id;
+              if (devices.length == 2) cameraId = devices[1].id;
+              console.log("this", cameraId);
+              // var resultContainer = document.getElementById("qr-reader-results");
+              // resultContainer.innerText = devices.length;
+              // .. use this to start scanning.
+
+              let config = {
+                fps: 10,
+                qrbox: 250,
+              };
+              var html5QrcodeScanner = new Html5Qrcode("qr-reader");
+              console.log("camera id", cameraId);
+              html5QrcodeScanner
+                .start(cameraId, config, onScanSuccess, () =>
+                  console.log("Error occured in scanning")
+                )
+                .catch((e) => console.log("Promise error"));
+            }
+          })
+          .catch((err) => {
+            // handle err
+          });
+        console.log("this", cameraId);
+
         var resultContainer = document.getElementById("qr-reader-results");
         var lastResult,
           countResults = 0;
@@ -56,12 +73,6 @@
             resultContainer.innerText = decodedText;
           }
         }
-
-        var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
-          fps: 10,
-          qrbox: 250,
-        });
-        html5QrcodeScanner.render(onScanSuccess);
       });
     </script>
   </head>
