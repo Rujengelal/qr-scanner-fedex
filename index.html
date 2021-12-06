@@ -7,12 +7,28 @@
         Barcode is shown here
       </div>
 
-      <button onclick="">Scan On/Off</button>
+      <button onclick="onOff()">Scan On/Off</button>
       <!-- <div id="qr-reader-results"></div> -->
     </body>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <script>
+      var html5QrcodeScanner = new Html5Qrcode("qr-reader");
+      var resultContainer = document.getElementById("qr-reader-results");
+      var rdr = document.getElementById("qr-reader");
+      let run = true;
+      let cameraId;
+
+      function onScanSuccess(decodedText, decodedResult) {
+        if (decodedText !== lastResult) {
+          ++countResults;
+          lastResult = decodedText;
+          // Handle on success condition with the decoded message.
+          console.log(`Scan result ${decodedText}`, decodedResult);
+          resultContainer.innerText = decodedText;
+        }
+      }
+
       function docReady(fn) {
         // see if DOM is already available
         if (
@@ -26,8 +42,30 @@
         }
       }
 
+      function onOff(e) {
+        if (!run) {
+          let config = {
+            fps: 10,
+            qrbox: 250,
+          };
+          html5QrcodeScanner
+            .start(cameraId, config, onScanSuccess, () =>
+              console.log("Error occured in scanning")
+            )
+            .catch((e) => console.log("Promise error"));
+          run = true;
+        } else {
+          html5QrcodeScanner
+            .stop()
+            .then((e) => {
+              console.log("clicked");
+              rdr.innerHTML = "";
+            })
+            .catch((e) => console.log("clicked E"));
+          run = false;
+        }
+      }
       docReady(function async() {
-        let cameraId;
         Html5Qrcode.getCameras()
           .then((devices) => {
             /**
@@ -47,7 +85,6 @@
                 fps: 10,
                 qrbox: 250,
               };
-              var html5QrcodeScanner = new Html5Qrcode("qr-reader");
               console.log("camera id", cameraId);
               html5QrcodeScanner
                 .start(cameraId, config, onScanSuccess, () =>
@@ -61,18 +98,8 @@
           });
         console.log("this", cameraId);
 
-        var resultContainer = document.getElementById("qr-reader-results");
         var lastResult,
           countResults = 0;
-        function onScanSuccess(decodedText, decodedResult) {
-          if (decodedText !== lastResult) {
-            ++countResults;
-            lastResult = decodedText;
-            // Handle on success condition with the decoded message.
-            console.log(`Scan result ${decodedText}`, decodedResult);
-            resultContainer.innerText = decodedText;
-          }
-        }
       });
     </script>
   </head>
