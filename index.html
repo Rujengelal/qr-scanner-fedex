@@ -33,15 +33,11 @@
   <body>
     <main class="wrapper" style="padding-top: 2em">
       <section class="container" id="demo-content">
-        <h1 class="title">Scan 1D code 128 Code from Video Camera</h1>
+        <h1 class="title">Demo Scan barcode from Video Camera</h1>
 
         <p>
-          <a class="button-small button-outline" href="../../index.html"
-            >HOME</a
-          >
+          <a class="button-small button-outline" href="#">HOME </a>
         </p>
-
-        <p>This is a demo</p>
 
         <div>
           <a class="button" id="startButton">Start</a>
@@ -51,8 +47,8 @@
         <div>
           <video
             id="video"
-            width="300"
-            height="200"
+            width="600"
+            height="400"
             style="border: 1px solid gray"
           ></video>
         </div>
@@ -67,7 +63,9 @@
       </section>
 
       <footer class="footer">
-        <section class="container"></section>
+        <section class="container">
+          <p>Demo</p>
+        </section>
       </footer>
     </main>
 
@@ -78,14 +76,14 @@
     <script type="text/javascript">
       window.addEventListener("load", function () {
         let selectedDeviceId;
-        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const codeReader = new ZXing.BrowserBarcodeReader();
         // console.log("ZXing code reader initialized");
         codeReader
-          .listVideoInputDevices()
+          .getVideoInputDevices()
           .then((videoInputDevices) => {
             const sourceSelect = document.getElementById("sourceSelect");
             selectedDeviceId = videoInputDevices[0].deviceId;
-            if (videoInputDevices.length >= 1) {
+            if (videoInputDevices.length > 1) {
               videoInputDevices.forEach((element) => {
                 const sourceOption = document.createElement("option");
                 sourceOption.text = element.label;
@@ -105,21 +103,16 @@
             document
               .getElementById("startButton")
               .addEventListener("click", () => {
-                codeReader.decodeFromVideoDevice(
-                  selectedDeviceId,
-                  "video",
-                  (result, err) => {
-                    if (result) {
-                      console.log(result);
-                      document.getElementById("result").textContent =
-                        result.text;
-                    }
-                    if (err && !(err instanceof ZXing.NotFoundException)) {
-                      console.error(err);
-                      document.getElementById("result").textContent = err;
-                    }
-                  }
-                );
+                codeReader
+                  .decodeOnceFromVideoDevice(selectedDeviceId, "video")
+                  .then((result) => {
+                    console.log(result);
+                    document.getElementById("result").textContent = result.text;
+                  })
+                  .catch((err) => {
+                    console.error(err);
+                    document.getElementById("result").textContent = err;
+                  });
                 console.log(
                   `Started continous decode from camera with id ${selectedDeviceId}`
                 );
@@ -128,8 +121,8 @@
             document
               .getElementById("resetButton")
               .addEventListener("click", () => {
-                codeReader.reset();
                 document.getElementById("result").textContent = "";
+                codeReader.reset();
                 console.log("Reset.");
               });
           })
